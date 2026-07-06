@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+                            <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background-color: #212529; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
-        /* Main App Container */
+        /* Main App Container (Reel Format) */
         #app-container {
             width: 100%;
             max-width: 400px;
@@ -19,6 +19,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
 
         /* Header */
@@ -57,9 +58,15 @@
 
         /* --- ADMIN MODE UI --- */
         .admin-content { padding: 20px; overflow-y: auto; flex-grow: 1; background: #f8f9fa; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 5px; }
+        .admin-section { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .admin-section h3 { font-size: 16px; color: #343a40; margin-bottom: 10px; border-bottom: 2px solid #1a73e8; padding-bottom: 5px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 5px; font-size: 14px; }
+        
+        .file-upload-box { border: 2px dashed #1a73e8; padding: 15px; text-align: center; border-radius: 8px; background: #f1f3f5; margin-bottom: 10px; }
+        .file-upload-box input { display: none; }
+        .file-upload-box label { color: #1a73e8; font-weight: bold; cursor: pointer; display: block; }
         
         /* --- PAYWALL UI --- */
         .paywall-content { padding: 20px; text-align: center; overflow-y: auto; background: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
@@ -84,20 +91,18 @@
         <div class="head-btns" id="headerBtns">
             <button onclick="toggleLanguage()" id="langBtn">EN / HI</button>
             <button onclick="toggleView()" id="viewBtn">Admin</button>
-            <button onclick="logout()" style="background: #dc3545; color: white;">Logout</button>
+            <button onclick="logout()" style="background: #dc3545; color: white;">Out</button>
         </div>
     </header>
 
     <!-- LOGIN MODE -->
     <div id="loginView" class="view-section login-content">
-        <h2>Welcome to KarnQuest</h2>
-        <p>Login to start your 2-Day Free Trial</p>
-        
+        <h2>KarnQuest</h2>
+        <p>Login to start 2-Day Free Trial</p>
         <input type="text" id="userIdentifier" class="login-input" placeholder="Enter Mobile No. or Email">
         <button class="action-btn" id="sendOtpBtn" onclick="sendMockOtp()">Send OTP</button>
-
         <div id="otpSection" class="hidden" style="width: 100%;">
-            <input type="number" id="otpInput" class="login-input" placeholder="Enter 4-digit OTP">
+            <input type="number" id="otpInput" class="login-input" placeholder="Enter OTP (Use 1234)">
             <button class="action-btn" style="background: #28a745;" onclick="verifyMockOtp()">Verify & Login</button>
         </div>
     </div>
@@ -117,17 +122,32 @@
 
     <!-- ADMIN MODE -->
     <div id="adminView" class="view-section hidden admin-content">
-        <h2>Add New Question</h2>
-        <div class="form-group"><label>Subject</label><input type="text" id="addSection" placeholder="e.g. GK, Math"></div>
-        <div class="form-group"><label>Question (EN)</label><input type="text" id="addQEn"></div>
-        <div class="form-group"><label>Question (HI)</label><input type="text" id="addQHi"></div>
-        <div class="form-group"><label>Options (EN) - Comma separated</label><input type="text" id="addOptEn"></div>
-        <div class="form-group"><label>Options (HI) - Comma separated</label><input type="text" id="addOptHi"></div>
-        <div class="form-group">
-            <label>Correct Answer (1-4)</label>
-            <select id="addAnswer"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select>
+        
+        <!-- Bulk CSV Upload Section -->
+        <div class="admin-section">
+            <h3>Bulk Upload (CSV)</h3>
+            <button class="action-btn" style="background: #6c757d; font-size: 13px; padding: 8px;" onclick="downloadSampleCSV()">⬇️ Download Sample CSV</button>
+            <div class="file-upload-box">
+                <label for="csvFileInput">📁 Tap to Select CSV File</label>
+                <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVUpload(event)">
+            </div>
+            <p id="csvStatus" style="font-size: 12px; color: #28a745; text-align: center; font-weight: bold;"></p>
         </div>
-        <button class="action-btn" style="background: #28a745;" onclick="saveNewQuestion()">Upload Question</button>
+
+        <!-- Manual Single Question Upload Section -->
+        <div class="admin-section">
+            <h3>Add Single Question</h3>
+            <div class="form-group"><label>Subject</label><input type="text" id="addSection" placeholder="e.g. GK, Math"></div>
+            <div class="form-group"><label>Question (EN)</label><input type="text" id="addQEn"></div>
+            <div class="form-group"><label>Question (HI)</label><input type="text" id="addQHi"></div>
+            <div class="form-group"><label>Options (EN) - Comma separated</label><input type="text" id="addOptEn"></div>
+            <div class="form-group"><label>Options (HI) - Comma separated</label><input type="text" id="addOptHi"></div>
+            <div class="form-group">
+                <label>Correct Answer (1-4)</label>
+                <select id="addAnswer"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select>
+            </div>
+            <button class="action-btn" style="background: #1a73e8; margin-top: 10px;" onclick="saveNewQuestion()">Upload Single Q</button>
+        </div>
     </div>
 
     <!-- PAYWALL MODE -->
@@ -135,13 +155,11 @@
         <h2>Trial Expired!</h2>
         <p>Unlock all questions and features.</p>
         <div class="price-box">1 Month Access - ₹10</div>
-        
         <img src="1000039967.jpg" alt="Payment QR Code" class="qr-code">
         <div class="upi-id">UPI: 9354774788@fam</div>
-        
-        <input type="text" id="utrInput" class="login-input" placeholder="Enter 12-digit UTR / Ref No.">
+        <input type="text" id="utrInput" class="login-input" placeholder="Enter 12-digit UTR">
         <button class="action-btn" style="background: #28a745;" onclick="verifyPayment()">Verify & Activate</button>
-        <button class="action-btn" style="background: #6c757d; margin-top: 10px;" onclick="logout()">Logout</button>
+        <button class="action-btn" style="background: #6c757d;" onclick="logout()">Logout</button>
     </div>
 </div>
 
@@ -150,173 +168,80 @@
     let db = JSON.parse(localStorage.getItem('karnQuestDB')) || {
         "GK": [{ en: { q: "Who is known as the Father of the Nation?", options: ["S.C. Bose", "Mahatma Gandhi", "Bhagat Singh", "J. Nehru"] }, hi: { q: "राष्ट्रपिता के रूप में किसे जाना जाता है?", options: ["सुभाष चंद्र बोस", "महात्मा गांधी", "भगत सिंह", "जवाहरलाल नेहरू"] }, answerIndex: 1 }]
     };
-    localStorage.setItem('karnQuestDB', JSON.stringify(db));
-
-    // --- APP STATE ---
-    let currentLang = 'hi'; 
-    let currentSection = Object.keys(db)[0] || '';
-    let currentQuestionIndex = 0;
-    let isAdminView = false;
+    
+    // User DB (Reel-format Login persistence)
+    let usersDB = JSON.parse(localStorage.getItem('karnQuestUsers')) || {};
     let loggedInUser = localStorage.getItem('karnQuestActiveUser');
     
-    // User Database to track subscriptions per phone/email
-    let usersDB = JSON.parse(localStorage.getItem('karnQuestUsers')) || {};
+    let currentLang = 'hi', currentSection = Object.keys(db)[0] || '', currentQuestionIndex = 0, isAdminView = false;
 
-    // --- LOGIN / OTP LOGIC ---
-    function sendMockOtp() {
-        const identifier = document.getElementById('userIdentifier').value.trim();
-        if(identifier.length < 5) { alert("Please enter a valid Mobile Number or Email"); return; }
-        
-        document.getElementById('sendOtpBtn').classList.add('hidden');
-        document.getElementById('otpSection').classList.remove('hidden');
-        
-        // Demo OTP Alert
-        alert("DEMO OTP: 1234\n(In a real app with a backend, this would go to your phone/email)");
+    // --- CSV BULK UPLOAD LOGIC ---
+    function downloadSampleCSV() {
+        // Generates a 12-column robust CSV format
+        const csvContent = "data:text/csv;charset=utf-8,Subject,Question(EN),Question(HI),Opt1(EN),Opt2(EN),Opt3(EN),Opt4(EN),Opt1(HI),Opt2(HI),Opt3(HI),Opt4(HI),Correct(1-4)\nMath,What is 88x88?,88x88 का मान क्या होगा?,7744,7844,6744,8844,7744,7844,6744,8844,1\nGK,Capital of India?,भारत की राजधानी?,Delhi,Mumbai,Kolkata,Goa,दिल्ली,मुंबई,कोलकाता,गोवा,1";
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "KarnQuest_Sample.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
-    function verifyMockOtp() {
-        const otp = document.getElementById('otpInput').value.trim();
-        const identifier = document.getElementById('userIdentifier').value.trim();
-        
-        if(otp === "1234") {
-            loggedInUser = identifier;
-            localStorage.setItem('karnQuestActiveUser', loggedInUser);
-            
-            // Register new user and start trial if they don't exist
-            if(!usersDB[loggedInUser]) {
-                usersDB[loggedInUser] = { installDate: Date.now(), subExpiry: 0 };
-                localStorage.setItem('karnQuestUsers', JSON.stringify(usersDB));
+    function handleCSVUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const lines = text.split(/\r\n|\n/);
+            let addedCount = 0;
+
+            for (let i = 1; i < lines.length; i++) { // Skip header row
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                // Basic CSV line parser to handle quotes
+                let cols = [], curr = '', inQuotes = false;
+                for(let c=0; c<line.length; c++) {
+                    if(line[c] === '"') inQuotes = !inQuotes;
+                    else if(line[c] === ',' && !inQuotes) { cols.push(curr); curr=''; }
+                    else curr += line[c];
+                }
+                cols.push(curr);
+
+                if (cols.length >= 12) {
+                    const subject = cols[0].trim();
+                    const qEn = cols[1].trim();
+                    const qHi = cols[2].trim();
+                    const oEn = [cols[3].trim(), cols[4].trim(), cols[5].trim(), cols[6].trim()];
+                    const oHi = [cols[7].trim(), cols[8].trim(), cols[9].trim(), cols[10].trim()];
+                    const ans = parseInt(cols[11].trim()) - 1;
+
+                    if (!db[subject]) db[subject] = [];
+                    db[subject].push({
+                        en: { q: qEn, options: oEn },
+                        hi: { q: qHi, options: oHi },
+                        answerIndex: ans
+                    });
+                    addedCount++;
+                }
             }
             
-            showToast("Login Successful!");
-            startAppFlow();
-        } else {
-            alert("Invalid OTP! Use 1234 for demo.");
-        }
+            if(addedCount > 0) {
+                localStorage.setItem('karnQuestDB', JSON.stringify(db));
+                document.getElementById('csvStatus').innerText = `${addedCount} Questions added successfully!`;
+                showToast(`${addedCount} Bulk Questions Added!`);
+                currentSection = Object.keys(db)[0]; // Reset to show new data
+            } else {
+                alert("No valid data found. Please follow the sample CSV format exactly (12 columns).");
+            }
+            event.target.value = ''; // Reset input
+        };
+        reader.readAsText(file);
     }
 
-    function logout() {
-        localStorage.removeItem('karnQuestActiveUser');
-        location.reload(); // Refresh to show login screen
-    }
-
-    // --- START APP & ACCESS CHECK ---
-    function startAppFlow() {
-        if(!loggedInUser) {
-            hideAllViews();
-            document.getElementById('loginView').classList.remove('hidden');
-            document.getElementById('appHeader').classList.add('hidden');
-            return;
-        }
-
-        document.getElementById('appHeader').classList.remove('hidden');
-        const userData = usersDB[loggedInUser];
-        const now = Date.now();
-        const trialDuration = 2 * 24 * 60 * 60 * 1000; // 2 Days
-        
-        const isTrialActive = (now - userData.installDate) < trialDuration;
-        const isSubActive = now < userData.subExpiry;
-
-        if (isSubActive) {
-            document.getElementById('trialBadge').classList.add('hidden');
-            loadStudyMode();
-        } else if (isTrialActive) {
-            document.getElementById('trialBadge').classList.remove('hidden');
-            let hoursLeft = Math.ceil((trialDuration - (now - userData.installDate)) / (1000 * 60 * 60));
-            document.getElementById('trialBadge').innerText = `Trial: ${hoursLeft}h left`;
-            loadStudyMode();
-        } else {
-            showPaywall();
-        }
-    }
-
-    function loadStudyMode() {
-        hideAllViews();
-        document.getElementById('studyView').classList.remove('hidden');
-        document.getElementById('headerBtns').classList.remove('hidden');
-        if(Object.keys(db).length > 0) { currentSection = Object.keys(db)[0]; loadSections(); loadQuestion(); }
-    }
-
-    function hideAllViews() {
-        document.getElementById('loginView').classList.add('hidden');
-        document.getElementById('studyView').classList.add('hidden');
-        document.getElementById('adminView').classList.add('hidden');
-        document.getElementById('paywallView').classList.add('hidden');
-    }
-
-    function showPaywall() {
-        hideAllViews();
-        document.getElementById('paywallView').classList.remove('hidden');
-        document.getElementById('headerBtns').classList.add('hidden');
-        document.getElementById('trialBadge').classList.add('hidden');
-    }
-
-    // --- STUDY & UI LOGIC ---
-    function loadSections() {
-        const sectionBar = document.getElementById('sectionBar');
-        sectionBar.innerHTML = '';
-        Object.keys(db).forEach(section => {
-            const btn = document.createElement('button'); btn.innerText = section;
-            if(section === currentSection) btn.classList.add('active');
-            btn.onclick = () => { currentSection = section; currentQuestionIndex = 0; loadSections(); loadQuestion(); };
-            sectionBar.appendChild(btn);
-        });
-    }
-
-    function loadQuestion() {
-        if (!db[currentSection] || db[currentSection].length === 0) return;
-        const qData = db[currentSection][currentQuestionIndex];
-        const langData = qData[currentLang];
-        document.getElementById('questionText').innerText = `Q${currentQuestionIndex + 1}. ${langData.q}`;
-        const optionsContainer = document.getElementById('optionsContainer'); optionsContainer.innerHTML = '';
-        langData.options.forEach((opt, index) => {
-            const optDiv = document.createElement('div'); optDiv.className = 'option'; optDiv.innerText = opt;
-            optDiv.onclick = () => {
-                const allOpts = optionsContainer.children;
-                for (let i = 0; i < allOpts.length; i++) {
-                    allOpts[i].style.pointerEvents = 'none';
-                    if (i === qData.answerIndex) allOpts[i].classList.add('correct');
-                }
-                if (index !== qData.answerIndex) optDiv.classList.add('wrong');
-            };
-            optionsContainer.appendChild(optDiv);
-        });
-        document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
-        document.getElementById('nextBtn').disabled = currentQuestionIndex === db[currentSection].length - 1;
-    }
-
-    function nextQuestion() { if (currentQuestionIndex < db[currentSection].length - 1) { currentQuestionIndex++; loadQuestion(); } }
-    function prevQuestion() { if (currentQuestionIndex > 0) { currentQuestionIndex--; loadQuestion(); } }
-    
-    function toggleLanguage() {
-        currentLang = currentLang === 'en' ? 'hi' : 'en';
-        document.getElementById('langBtn').innerText = currentLang === 'en' ? "English" : "हिन्दी";
-        if(!isAdminView) loadQuestion();
-    }
-
-    function toggleView() {
-        isAdminView = !isAdminView;
-        hideAllViews();
-        if(isAdminView) {
-            document.getElementById('adminView').classList.remove('hidden');
-            document.getElementById('viewBtn').innerText = "Study";
-        } else {
-            document.getElementById('studyView').classList.remove('hidden');
-            document.getElementById('viewBtn').innerText = "Admin";
-            loadStudyMode();
-        }
-    }
-
-    // --- PAYMENT & ADMIN ---
-    function verifyPayment() {
-        const utr = document.getElementById('utrInput').value.trim();
-        if(utr.length < 4) { alert("कृपया सही UTR डालें।"); return; }
-        usersDB[loggedInUser].subExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000); 
-        localStorage.setItem('karnQuestUsers', JSON.stringify(usersDB));
-        showToast("Payment Verified! Unlocked for 30 Days.");
-        setTimeout(() => startAppFlow(), 1500);
-    }
-
+    // --- SINGLE QUESTION UPLOAD (MANUAL) ---
     function saveNewQuestion() {
         const section = document.getElementById('addSection').value.trim(), qEn = document.getElementById('addQEn').value.trim(), qHi = document.getElementById('addQHi').value.trim();
         const optEnStr = document.getElementById('addOptEn').value.trim(), optHiStr = document.getElementById('addOptHi').value.trim(), ansIndex = parseInt(document.getElementById('addAnswer').value) - 1;
@@ -328,12 +253,75 @@
         localStorage.setItem('karnQuestDB', JSON.stringify(db)); showToast("Question Added!");
     }
 
-    function showToast(msg) {
-        const toast = document.getElementById('toastMessage'); toast.innerText = msg; toast.style.display = 'block';
-        setTimeout(() => toast.style.display = 'none', 2000);
+    // --- LOGIN / OTP LOGIC ---
+    function sendMockOtp() {
+        const identifier = document.getElementById('userIdentifier').value.trim();
+        if(identifier.length < 5) { alert("Please enter valid ID"); return; }
+        document.getElementById('sendOtpBtn').classList.add('hidden');
+        document.getElementById('otpSection').classList.remove('hidden');
+        alert("DEMO OTP: 1234");
     }
 
-    window.onload = startAppFlow;
-</script>
-</body>
-</html>
+    function verifyMockOtp() {
+        const otp = document.getElementById('otpInput').value.trim(), identifier = document.getElementById('userIdentifier').value.trim();
+        if(otp === "1234") {
+            loggedInUser = identifier; localStorage.setItem('karnQuestActiveUser', loggedInUser);
+            if(!usersDB[loggedInUser]) { usersDB[loggedInUser] = { installDate: Date.now(), subExpiry: 0 }; localStorage.setItem('karnQuestUsers', JSON.stringify(usersDB)); }
+            showToast("Login Successful!"); startAppFlow();
+        } else alert("Invalid OTP! Use 1234.");
+    }
+
+    function logout() { localStorage.removeItem('karnQuestActiveUser'); location.reload(); }
+
+    // --- APP FLOW & STUDY LOGIC ---
+    function startAppFlow() {
+        if(!loggedInUser) { hideAllViews(); document.getElementById('loginView').classList.remove('hidden'); document.getElementById('appHeader').classList.add('hidden'); return; }
+        document.getElementById('appHeader').classList.remove('hidden');
+        const userData = usersDB[loggedInUser], now = Date.now(), trialDuration = 2 * 24 * 60 * 60 * 1000;
+        if (now < userData.subExpiry) { document.getElementById('trialBadge').classList.add('hidden'); loadStudyMode(); }
+        else if ((now - userData.installDate) < trialDuration) {
+            document.getElementById('trialBadge').classList.remove('hidden');
+            document.getElementById('trialBadge').innerText = `Trial: ${Math.ceil((trialDuration - (now - userData.installDate)) / 3600000)}h left`;
+            loadStudyMode();
+        } else showPaywall();
+    }
+
+    function loadStudyMode() {
+        hideAllViews(); document.getElementById('studyView').classList.remove('hidden'); document.getElementById('headerBtns').classList.remove('hidden');
+        if(Object.keys(db).length > 0) { currentSection = Object.keys(db)[0]; loadSections(); loadQuestion(); }
+    }
+
+    function hideAllViews() { ['loginView', 'studyView', 'adminView', 'paywallView'].forEach(id => document.getElementById(id).classList.add('hidden')); }
+    function showPaywall() { hideAllViews(); document.getElementById('paywallView').classList.remove('hidden'); document.getElementById('headerBtns').classList.add('hidden'); document.getElementById('trialBadge').classList.add('hidden'); }
+
+    function loadSections() {
+        const bar = document.getElementById('sectionBar'); bar.innerHTML = '';
+        Object.keys(db).forEach(section => {
+            const btn = document.createElement('button'); btn.innerText = section;
+            if(section === currentSection) btn.classList.add('active');
+            btn.onclick = () => { currentSection = section; currentQuestionIndex = 0; loadSections(); loadQuestion(); };
+            bar.appendChild(btn);
+        });
+    }
+
+    function loadQuestion() {
+        if (!db[currentSection] || db[currentSection].length === 0) return;
+        const qData = db[currentSection][currentQuestionIndex], langData = qData[currentLang];
+        document.getElementById('questionText').innerText = `Q${currentQuestionIndex + 1}. ${langData.q}`;
+        const container = document.getElementById('optionsContainer'); container.innerHTML = '';
+        langData.options.forEach((opt, index) => {
+            const div = document.createElement('div'); div.className = 'option'; div.innerText = opt;
+            div.onclick = () => {
+                const allOpts = container.children;
+                for (let i = 0; i < allOpts.length; i++) { allOpts[i].style.pointerEvents = 'none'; if (i === qData.answerIndex) allOpts[i].classList.add('correct'); }
+                if (index !== qData.answerIndex) div.classList.add('wrong');
+            };
+            container.appendChild(div);
+        });
+        document.getElementById('prevBtn').disabled = currentQuestionIndex === 0; document.getElementById('nextBtn').disabled = currentQuestionIndex === db[currentSection].length - 1;
+    }
+
+    function nextQuestion() { if (currentQuestionIndex < db[currentSection].length - 1) { currentQuestionIndex++; loadQuestion(); } }
+    function prevQuestion() { if (currentQuestionIndex > 0) { currentQuestionIndex--; loadQuestion(); } }
+    function toggleLanguage() { currentLang = currentLang === 'en' ? 'hi' : 'en'; document.getElementById('langBtn').innerText = currentLang === 'en' ? "English" : "हिन्दी"; if(!isAdminView) loadQuestion(); }
+    function toggleView() { isAdminView = !isAdminView; hideAllViews(); if(isAdminView) { document.getElementById('adm
